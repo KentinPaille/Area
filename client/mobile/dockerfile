@@ -1,0 +1,32 @@
+# Use a base image with Node.js and the Android SDK
+FROM reactnativecommunity/react-native-android:latest AS builder
+
+# Set the working directory in the container to /app
+WORKDIR /app/
+
+# Copy existing application directory contents
+COPY . /app/
+
+# Install any needed packages specified in package.json
+RUN npm install
+
+# You may need to accept Android SDK licenses
+RUN yes | sdkmanager --licenses
+
+# Build android release APK
+RUN cd android && ./gradlew assembleRelease
+
+# Start a new stage to setup Nginx server
+FROM nginx:alpine
+
+# Copy the APK from the previous stage
+COPY --from=builder /app/android/app/build/outputs/apk/release/app-release.apk /usr/share/nginx/html/client.apk
+
+# Copy the entrypoint from the builder stage
+COPY --from=builder /app/entrypoint.sh /entrypoint.sh
+
+# Make the script executable
+RUN chmod +x /entrypoint.sh
+
+# Set Entrypoint to entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]

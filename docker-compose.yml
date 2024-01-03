@@ -1,0 +1,36 @@
+version: '3'
+services:
+  server:
+    build: ./server
+    ports:
+      - "8080:8080"
+
+  mobile:
+    build: ./client/mobile
+    volumes:
+      - shared_cli_volume:/shared_data  # APK will be stored here
+
+  web:
+    build: ./client/web
+    ports:
+      - "8081:8081"
+    volumes:
+      - shared_cli_volume:/web/public  # Copy APK to Next.js public folder
+    depends_on:
+      - server
+      - mobile
+
+  postgres:
+    build: ./db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=toor
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  shared_cli_volume: 
+  postgres_data:

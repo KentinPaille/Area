@@ -1,0 +1,22 @@
+# Use the official Node.js image as a parent image
+FROM node:latest
+
+WORKDIR /web/
+
+COPY . /web/
+
+# Install the project's dependencies inside the container
+RUN npm install
+
+# Build Next.js
+RUN npx next build
+
+# Copy APK to Next.js public folder (this assumes the APK is in /shared_data which is mounted as a volume)
+# This is commented out for now, uncomment if necessary.
+# COPY /shared_data/client.apk /web/public/client.apk
+
+# Make the container listen on port 3000 (default for Next.js) at runtime
+EXPOSE 3000
+
+# Specify the command to run when the container starts
+CMD [ "npm", "run", "start" ]
